@@ -26,11 +26,12 @@ func main() {
 		os.Exit(1)
 	}
 
-	// Print package information
-	fmt.Printf("Package: %s\n", pkg.Package)
-	fmt.Printf("Version: %s\n", pkg.Version)
-	fmt.Printf("Architecture: %s\n", pkg.Architecture)
-	fmt.Printf("Maintainer: %s\n", pkg.Maintainer)
-	fmt.Printf("Short Description: %s\n", pkg.ShortDescription)
-	fmt.Printf("Description: %s\n", pkg.Description)
+	// Print package name from the .deb file
+	fmt.Printf("Package from .deb file: %s\n", pkg.Package)
+
+	// Print package name from installed packages
+	packages, _ := d.List()
+	for _, p := range packages {
+		fmt.Printf("Package from dpkg status file: %s\n", p.Package)
+	}
 }

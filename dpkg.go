@@ -6,7 +6,9 @@ import (
 )
 
 // Dpkg represents a Debian package manager
-type Dpkg struct{}
+type Dpkg struct {
+	StatusFileLocation string
+}
 
 // Info retrieves the metadata of a Debian package
 func (d *Dpkg) Info(debFile string) (*DebPackage, error) {
@@ -15,6 +17,16 @@ func (d *Dpkg) Info(debFile string) (*DebPackage, error) {
 		return nil, err
 	}
 	return pkg, nil
+}
+
+// List lists packages from default dpkg database
+func (d *Dpkg) List() ([]DebPackage, error) {
+	return parseStatusFile(DPKG_DATABASE)
+}
+
+// List lists packages from custom dpkg database
+func (d *Dpkg) ListCustom(statusFile string) ([]DebPackage, error) {
+	return parseStatusFile(statusFile)
 }
 
 // IsDebFile checks if the file is a valid .deb package
@@ -37,13 +49,4 @@ func (d *Dpkg) IsDebFile(debFile string) bool {
 
 	// Check the "magic value" for the ar format
 	return strings.HasPrefix(string(magic), magicValue)
-}
-
-// Info retrieves the metadata of a Debian package
-func (d *Dpkg) List(debFile string) (*DebPackage, error) {
-	pkg, err := d.readArchive(debFile)
-	if err != nil {
-		return nil, err
-	}
-	return pkg, nil
 }

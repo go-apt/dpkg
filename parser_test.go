@@ -50,3 +50,51 @@ func TestParseControlFile(t *testing.T) {
 		}
 	}
 }
+
+// TestReadPackageBlocks tests the readPackageBlocks function
+func TestReadPackageBlocks(t *testing.T) {
+	statusFile := "testdata/status"
+	blocks, err := readPackageBlocks(statusFile)
+	if err != nil {
+		t.Fatalf("Failed to read package blocks from %s: %v", statusFile, err)
+	}
+
+	if len(blocks) == 0 {
+		t.Errorf("Expected non-zero number of blocks, got %d", len(blocks))
+	}
+
+	// Additional checks to ensure blocks are not empty
+	for i, block := range blocks {
+		if len(block) == 0 {
+			t.Errorf("Block %d is empty", i)
+		}
+	}
+}
+
+// TestParseStatusFile tests the parseStatusFile function
+func TestParseStatusFile(t *testing.T) {
+	statusFile := "testdata/status"
+	expectedPackages := []DebPackage{
+		{Package: "adduser", Version: "3.134"},
+		{Package: "apparmor", Version: "3.0.8-3"},
+		{Package: "apt", Version: "2.6.1"},
+		{Package: "apt-listchanges", Version: "3.24"},
+		{Package: "apt-mirror", Version: "0.5.4-2"},
+	}
+
+	packages, err := parseStatusFile(statusFile)
+	if err != nil {
+		t.Fatalf("Failed to parse status file from %s: %v", statusFile, err)
+	}
+
+	if len(packages) != len(expectedPackages) {
+		t.Fatalf("Expected %d packages, got %d", len(expectedPackages), len(packages))
+	}
+
+	for i, pkg := range packages {
+		expected := expectedPackages[i]
+		if pkg.Package != expected.Package || pkg.Version != expected.Version {
+			t.Errorf("Package %d does not match expected values. Got %+v, expected %+v", i, pkg, expected)
+		}
+	}
+}
