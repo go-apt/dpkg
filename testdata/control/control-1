@@ -1,0 +1,22 @@
+Package: vim-tiny
+Version: 1:7.0-122+1etch5
+Section: editors
+Priority: important
+Architecture: amd64
+Depends: vim-common (= 1:7.0-122+1etch5), libc6 (>= 2.3.5-1), libncurses5 (>= 5.4-5)
+Provides: editor
+Installed-Size: 1196
+Maintainer: Debian VIM Maintainers <pkg-vim-maintainers@lists.alioth.debian.org>
+Source: vim
+Description: Vi IMproved - enhanced vi editor - compact version
+ Vim is an almost compatible version of the UNIX editor Vi.
+ .
+ Many new features have been added: multi level undo, syntax
+ highlighting, command line history, on-line help, filename
+ completion, block operations, folding, Unicode support, etc.
+ .
+ This package contains a minimal version of vim compiled with no
+ GUI and a small subset of features in order to keep small the
+ package size. This package does not depend on the vim-runtime
+ package, but installing it you will get its additional benefits
+ (online documentation, plugins, ...).

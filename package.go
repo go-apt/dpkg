@@ -28,7 +28,9 @@ func parseControlFile(reader io.Reader) (*DebPackage, error) {
 	lines := strings.Split(string(content), "\n")
 
 	// Iterate over the lines to fill the struct
-	for _, line := range lines {
+	var descriptionLines []string
+	for i := 0; i < len(lines); i++ {
+		line := lines[i]
 		switch {
 		case strings.HasPrefix(line, "Package:"):
 			pkg.Package = strings.TrimSpace(strings.TrimPrefix(line, "Package:"))
@@ -39,7 +41,13 @@ func parseControlFile(reader io.Reader) (*DebPackage, error) {
 		case strings.HasPrefix(line, "Maintainer:"):
 			pkg.Maintainer = strings.TrimSpace(strings.TrimPrefix(line, "Maintainer:"))
 		case strings.HasPrefix(line, "Description:"):
-			pkg.Description = strings.TrimSpace(strings.TrimPrefix(line, "Description:"))
+			descriptionLines = append(descriptionLines, strings.TrimSpace(strings.TrimPrefix(line, "Description:")))
+			// Continue reading the following lines as part of the description
+			for i+1 < len(lines) && (strings.HasPrefix(lines[i+1], " ") || strings.HasPrefix(lines[i+1], "\t")) {
+				i++
+				descriptionLines = append(descriptionLines, strings.TrimSpace(lines[i]))
+			}
+			pkg.Description = strings.Join(descriptionLines, "\n")
 		}
 	}
 
