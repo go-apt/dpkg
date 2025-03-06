@@ -45,10 +45,11 @@ func (d *Dpkg) readArchive(debFile string) (*DebPackage, error) {
 }
 
 // extractControlFile extracts the control file from the archive
-func extractControlFile(filename string, arReader *ar.Reader) (*DebPackage, error) {
+func extractControlFile(filename string, arReader io.Reader) (*DebPackage, error) {
 	var err error
 	var uncompressedData io.Reader
 
+	// Handle different compression formats
 	// https://manpages.debian.org/buster/dpkg-dev/deb.5.en.html#FORMAT
 	switch path.Ext(filename) {
 	case ".tar":
@@ -58,7 +59,7 @@ func extractControlFile(filename string, arReader *ar.Reader) (*DebPackage, erro
 	case ".xz":
 		uncompressedData, err = extractXzFile(arReader)
 	default:
-		return nil, fmt.Errorf("go-apt/dpkg: does not know how to handle compression format for %s", filename)
+		return nil, fmt.Errorf("go-apt/dpkg: unsupported compression format for %s", filename)
 	}
 
 	if err != nil {
@@ -72,7 +73,7 @@ func extractControlFile(filename string, arReader *ar.Reader) (*DebPackage, erro
 func extractGzipFile(compressedReader io.Reader) (io.Reader, error) {
 	gzReader, err := gzip.NewReader(compressedReader)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("go-apt/dpkg: failed to create gzip reader: %w", err)
 	}
 	return gzReader, nil
 }
@@ -81,7 +82,7 @@ func extractGzipFile(compressedReader io.Reader) (io.Reader, error) {
 func extractXzFile(compressedReader io.Reader) (io.Reader, error) {
 	xzReader, err := xz.NewReader(compressedReader)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("go-apt/dpkg: failed to create xz reader: %w", err)
 	}
 	return xzReader, nil
 }
@@ -95,7 +96,7 @@ func extractControlFromTarFile(uncompressedReader io.Reader) (*DebPackage, error
 			break
 		}
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("go-apt/dpkg: failed to read tar header: %w", err)
 		}
 
 		if tarHeader.Name == "./control" || tarHeader.Name == "control" {
