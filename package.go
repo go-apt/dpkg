@@ -7,11 +7,12 @@ import (
 
 // DebPackage represents the metadata of a Debian package
 type DebPackage struct {
-	Package      string
-	Version      string
-	Architecture string
-	Maintainer   string
-	Description  string
+	Package          string
+	Version          string
+	Architecture     string
+	Maintainer       string
+	Description      string
+	ShortDescription string
 }
 
 // parseControlFile parses the control file content into a DebPackage struct
@@ -41,7 +42,9 @@ func parseControlFile(reader io.Reader) (*DebPackage, error) {
 		case strings.HasPrefix(line, "Maintainer:"):
 			pkg.Maintainer = strings.TrimSpace(strings.TrimPrefix(line, "Maintainer:"))
 		case strings.HasPrefix(line, "Description:"):
-			descriptionLines = append(descriptionLines, strings.TrimSpace(strings.TrimPrefix(line, "Description:")))
+			firstLine := strings.TrimSpace(strings.TrimPrefix(line, "Description:"))
+			pkg.ShortDescription = firstLine
+			descriptionLines = append(descriptionLines, firstLine)
 			// Continue reading the following lines as part of the description
 			for i+1 < len(lines) && (strings.HasPrefix(lines[i+1], " ") || strings.HasPrefix(lines[i+1], "\t")) {
 				i++

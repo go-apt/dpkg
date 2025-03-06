@@ -21,14 +21,16 @@ func main() {
 
 	// Read the contents of the .deb file
 	pkg, err := d.Info(debFile)
-
 	if err != nil {
-		panic(err)
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		os.Exit(1)
 	}
 
+	// Print package information
 	fmt.Printf("Package: %s\n", pkg.Package)
 	fmt.Printf("Version: %s\n", pkg.Version)
 	fmt.Printf("Architecture: %s\n", pkg.Architecture)
 	fmt.Printf("Maintainer: %s\n", pkg.Maintainer)
+	fmt.Printf("Short Description: %s\n", pkg.ShortDescription)
 	fmt.Printf("Description: %s\n", pkg.Description)
 }
