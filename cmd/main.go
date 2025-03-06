@@ -29,8 +29,14 @@ func main() {
 	// Print package name from the .deb file
 	fmt.Printf("Package from .deb file: %s\n", pkg.Package)
 
+	// Read the contents of the /var/lib/dpkg/status file
+	packages, err := d.List()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		os.Exit(1)
+	}
+
 	// Print package name from installed packages
-	packages, _ := d.List()
 	for _, p := range packages {
 		fmt.Printf("Package from dpkg status file: %s\n", p.Package)
 	}
