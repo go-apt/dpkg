@@ -35,6 +35,40 @@ func parseControlFile(reader io.Reader) (*DebPackage, error) {
 			pkg.Architecture = strings.TrimSpace(strings.TrimPrefix(line, "Architecture:"))
 		case strings.HasPrefix(line, "Maintainer:"):
 			pkg.Maintainer = strings.TrimSpace(strings.TrimPrefix(line, "Maintainer:"))
+		case strings.HasPrefix(line, "Section:"):
+			pkg.Section = strings.TrimSpace(strings.TrimPrefix(line, "Section:"))
+		case strings.HasPrefix(line, "Priority:"):
+			pkg.Priority = strings.TrimSpace(strings.TrimPrefix(line, "Priority:"))
+		case strings.HasPrefix(line, "Essential:"):
+			pkg.Essential = strings.TrimSpace(strings.TrimPrefix(line, "Essential:"))
+		case strings.HasPrefix(line, "Installed-Size:"):
+			pkg.InstalledSize = strings.TrimSpace(strings.TrimPrefix(line, "Installed-Size:"))
+		case strings.HasPrefix(line, "Depends:"):
+			pkg.Depends = strings.Split(strings.TrimSpace(strings.TrimPrefix(line, "Depends:")), ",")
+		case strings.HasPrefix(line, "Pre-Depends:"):
+			pkg.PreDepends = strings.Split(strings.TrimSpace(strings.TrimPrefix(line, "Pre-Depends:")), ",")
+		case strings.HasPrefix(line, "Recommends:"):
+			pkg.Recommends = strings.Split(strings.TrimSpace(strings.TrimPrefix(line, "Recommends:")), ",")
+		case strings.HasPrefix(line, "Suggests:"):
+			pkg.Suggests = strings.Split(strings.TrimSpace(strings.TrimPrefix(line, "Suggests:")), ",")
+		case strings.HasPrefix(line, "Breaks:"):
+			pkg.Breaks = strings.Split(strings.TrimSpace(strings.TrimPrefix(line, "Breaks:")), ",")
+		case strings.HasPrefix(line, "Conflicts:"):
+			pkg.Conflicts = strings.Split(strings.TrimSpace(strings.TrimPrefix(line, "Conflicts:")), ",")
+		case strings.HasPrefix(line, "Provides:"):
+			pkg.Provides = strings.Split(strings.TrimSpace(strings.TrimPrefix(line, "Provides:")), ",")
+		case strings.HasPrefix(line, "Replaces:"):
+			pkg.Replaces = strings.Split(strings.TrimSpace(strings.TrimPrefix(line, "Replaces:")), ",")
+		case strings.HasPrefix(line, "Enhances:"):
+			pkg.Enhances = strings.Split(strings.TrimSpace(strings.TrimPrefix(line, "Enhances:")), ",")
+		case strings.HasPrefix(line, "Filename:"):
+			pkg.Filename = strings.TrimSpace(strings.TrimPrefix(line, "Filename:"))
+		case strings.HasPrefix(line, "Size:"):
+			pkg.Size = strings.TrimSpace(strings.TrimPrefix(line, "Size:"))
+		case strings.HasPrefix(line, "MD5sum:"):
+			pkg.MD5sum = strings.TrimSpace(strings.TrimPrefix(line, "MD5sum:"))
+		case strings.HasPrefix(line, "Homepage:"):
+			pkg.Homepage = strings.TrimSpace(strings.TrimPrefix(line, "Homepage:"))
 		case strings.HasPrefix(line, "Description:"):
 			firstLine := strings.TrimSpace(strings.TrimPrefix(line, "Description:"))
 			pkg.ShortDescription = firstLine
