@@ -61,6 +61,10 @@ func (dp *DebPackage) readDebFile() (io.ReadCloser, error) {
 
 // CalculateAllHashes calculates the MD5, SHA1, and SHA256 hashes of the package content
 func (dp *DebPackage) CalculateAllHashes() error {
+	if dp.MD5Hash != "" && dp.SHA1Hash != "" && dp.SHA256Hash != "" {
+		return nil
+	}
+
 	r, err := dp.readDebFile()
 	if err != nil {
 		return err
@@ -130,5 +134,6 @@ func (dp *DebPackage) SHA256sum() string {
 			return ""
 		}
 	}
+
 	return dp.SHA256Hash
 }

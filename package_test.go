@@ -152,3 +152,68 @@ func TestSHA256sum(t *testing.T) {
 		})
 	}
 }
+
+func BenchmarkCalcHashesIndividually(b *testing.B) {
+	test := struct {
+		debFile        string
+		expectedMD5    string
+		expectedSHA1   string
+		expectedSHA256 string
+	}{
+		debFile:        "testdata/debs/invalid-package_1.0_amd64.deb",
+		expectedMD5:    "ec649caf62773d8324b6ef96dac1c572",
+		expectedSHA1:   "262fc1ab65f071f015912c47b38507f6364aadd8",
+		expectedSHA256: "c00fbabe4192ff18b5c80eff33488cc6015b3600b9fd4fb270a66b05164fa815",
+	}
+
+	pkg := &DebPackage{Filename: test.debFile}
+
+	for i := 0; i < b.N; i++ {
+		pkg.MD5sum()
+		pkg.SHA1sum()
+		pkg.SHA256sum()
+
+		if pkg.MD5Hash != test.expectedMD5 {
+			b.Errorf("Expected MD5 hash %s, got %s", test.expectedMD5, pkg.MD5Hash)
+		}
+
+		if pkg.SHA1Hash != test.expectedSHA1 {
+			b.Errorf("Expected SHA1 hash %s, got %s", test.expectedSHA1, pkg.SHA1Hash)
+		}
+
+		if pkg.SHA256Hash != test.expectedSHA256 {
+			b.Errorf("Expected SHA256 hash %s, got %s", test.expectedSHA256, pkg.SHA256Hash)
+		}
+	}
+}
+
+func BenchmarkCalcAllHashes(b *testing.B) {
+	test := struct {
+		debFile        string
+		expectedMD5    string
+		expectedSHA1   string
+		expectedSHA256 string
+	}{
+		debFile:        "testdata/debs/invalid-package_1.0_amd64.deb",
+		expectedMD5:    "ec649caf62773d8324b6ef96dac1c572",
+		expectedSHA1:   "262fc1ab65f071f015912c47b38507f6364aadd8",
+		expectedSHA256: "c00fbabe4192ff18b5c80eff33488cc6015b3600b9fd4fb270a66b05164fa815",
+	}
+
+	pkg := &DebPackage{Filename: test.debFile}
+
+	for i := 0; i < b.N; i++ {
+		pkg.CalculateAllHashes()
+		if pkg.MD5Hash != test.expectedMD5 {
+			b.Errorf("Expected MD5 hash %s, got %s", test.expectedMD5, pkg.MD5Hash)
+		}
+
+		if pkg.SHA1Hash != test.expectedSHA1 {
+			b.Errorf("Expected SHA1 hash %s, got %s", test.expectedSHA1, pkg.SHA1Hash)
+		}
+
+		if pkg.SHA256Hash != test.expectedSHA256 {
+			b.Errorf("Expected SHA256 hash %s, got %s", test.expectedSHA256, pkg.SHA256Hash)
+		}
+	}
+}
