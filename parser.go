@@ -65,8 +65,6 @@ func parseControlFile(reader io.Reader) (*DebPackage, error) {
 			pkg.Filename = strings.TrimSpace(strings.TrimPrefix(line, "Filename:"))
 		case strings.HasPrefix(line, "Size:"):
 			pkg.Size = strings.TrimSpace(strings.TrimPrefix(line, "Size:"))
-		case strings.HasPrefix(line, "MD5sum:"):
-			pkg.MD5sum = strings.TrimSpace(strings.TrimPrefix(line, "MD5sum:"))
 		case strings.HasPrefix(line, "Homepage:"):
 			pkg.Homepage = strings.TrimSpace(strings.TrimPrefix(line, "Homepage:"))
 		case strings.HasPrefix(line, "Description:"):

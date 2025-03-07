@@ -37,6 +37,7 @@ func (d *Dpkg) readArchive(debFile string) (*DebPackage, error) {
 			if err != nil {
 				return nil, err
 			}
+			pkg.Filename = debFile
 			return pkg, nil
 		}
 	}
