@@ -6,8 +6,11 @@ import (
 )
 
 // Dpkg represents a Debian package manager
-type Dpkg struct {
-	StatusFileLocation string
+type Dpkg struct{}
+
+// NewDpkg creates a new instance of Dpkg
+func NewDpkg() *Dpkg {
+	return &Dpkg{}
 }
 
 // Info retrieves the metadata of a Debian package

@@ -17,7 +17,7 @@ func main() {
 	debFile := os.Args[1]
 
 	// Create a new instance of the Dpkg struct
-	d := dpkg.Dpkg{}
+	d := dpkg.NewDpkg()
 
 	// Read the contents of the .deb file
 	pkg, err := d.Info(debFile)
