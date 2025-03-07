@@ -26,12 +26,12 @@ func (d *Dpkg) Info(debFile string) (*DebPackage, error) {
 	return pkg, nil
 }
 
-// List lists packages from default dpkg database
+// List lists packages from the default dpkg database
 func (d *Dpkg) List() ([]DebPackage, error) {
 	return parseStatusFile(d.StatusFileLocation)
 }
 
-// ListGrep lists packages from default dpkg database that match the given package name
+// ListGrep lists packages from the default dpkg database that match the given package name
 func (d *Dpkg) ListGrep(pkgName string) ([]DebPackage, error) {
 	packages, err := parseStatusFile(d.StatusFileLocation)
 	if err != nil {
@@ -55,7 +55,6 @@ func (d *Dpkg) IsDebFile(debFile string) bool {
 	if err != nil {
 		return false
 	}
-
 	defer file.Close()
 
 	magicValue := "!<arch>\ndebian-binary"
@@ -68,4 +67,10 @@ func (d *Dpkg) IsDebFile(debFile string) bool {
 
 	// Check the "magic value" for the ar format
 	return strings.HasPrefix(string(magic), magicValue)
+}
+
+// ScanPackages scans the directory for packages matching the criteria
+func (d *Dpkg) ScanPackages(dir string) ([]byte, error) {
+	sp := NewPackagesScanner(dir)
+	return sp.ScanPackages()
 }

@@ -63,18 +63,15 @@ func parseControlFile(reader io.Reader) (*DebPackage, error) {
 			pkg.Enhances = strings.Split(strings.TrimSpace(strings.TrimPrefix(line, "Enhances:")), ",")
 		case strings.HasPrefix(line, "Filename:"):
 			pkg.Filename = strings.TrimSpace(strings.TrimPrefix(line, "Filename:"))
-		case strings.HasPrefix(line, "Size:"):
-			pkg.Size = strings.TrimSpace(strings.TrimPrefix(line, "Size:"))
 		case strings.HasPrefix(line, "Homepage:"):
 			pkg.Homepage = strings.TrimSpace(strings.TrimPrefix(line, "Homepage:"))
 		case strings.HasPrefix(line, "Description:"):
 			firstLine := strings.TrimSpace(strings.TrimPrefix(line, "Description:"))
-			pkg.ShortDescription = firstLine
 			descriptionLines = append(descriptionLines, firstLine)
 			// Continue reading the following lines as part of the description
 			for i+1 < len(lines) && (strings.HasPrefix(lines[i+1], " ") || strings.HasPrefix(lines[i+1], "\t")) {
 				i++
-				descriptionLines = append(descriptionLines, strings.TrimSpace(lines[i]))
+				descriptionLines = append(descriptionLines, lines[i])
 			}
 			pkg.Description = strings.Join(descriptionLines, "\n")
 		}
