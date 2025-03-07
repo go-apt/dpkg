@@ -40,4 +40,15 @@ func main() {
 	for _, p := range packages {
 		fmt.Printf("Package from dpkg status file: %s\n", p.Package)
 	}
+
+	filterePackages, err := d.ListGrep("apt")
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		os.Exit(1)
+	}
+
+	// Print package name from installed packages
+	for _, p := range filterePackages {
+		fmt.Printf("Packages from Grep search: %s\n", p.Package)
+	}
 }

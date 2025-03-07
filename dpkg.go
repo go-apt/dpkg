@@ -6,11 +6,15 @@ import (
 )
 
 // Dpkg represents a Debian package manager
-type Dpkg struct{}
+type Dpkg struct {
+	StatusFileLocation string
+}
 
 // NewDpkg creates a new instance of Dpkg
 func NewDpkg() *Dpkg {
-	return &Dpkg{}
+	return &Dpkg{
+		StatusFileLocation: DPKG_DATABASE,
+	}
 }
 
 // Info retrieves the metadata of a Debian package
@@ -24,12 +28,24 @@ func (d *Dpkg) Info(debFile string) (*DebPackage, error) {
 
 // List lists packages from default dpkg database
 func (d *Dpkg) List() ([]DebPackage, error) {
-	return parseStatusFile(DPKG_DATABASE)
+	return parseStatusFile(d.StatusFileLocation)
 }
 
-// List lists packages from custom dpkg database
-func (d *Dpkg) ListCustom(statusFile string) ([]DebPackage, error) {
-	return parseStatusFile(statusFile)
+// ListGrep lists packages from default dpkg database that match the given package name
+func (d *Dpkg) ListGrep(pkgName string) ([]DebPackage, error) {
+	packages, err := parseStatusFile(d.StatusFileLocation)
+	if err != nil {
+		return nil, err
+	}
+
+	var filteredPackages []DebPackage
+	for _, pkg := range packages {
+		if strings.Contains(pkg.Package, pkgName) {
+			filteredPackages = append(filteredPackages, pkg)
+		}
+	}
+
+	return filteredPackages, nil
 }
 
 // IsDebFile checks if the file is a valid .deb package
