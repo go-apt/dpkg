@@ -31,6 +31,22 @@ if err != nil {
 fmt.Printf("Package from .deb file: %s\n", pkg.Package)
 ```
 
+### Validating a `.deb` File
+
+To validate if a file is a valid `.deb` package, use the `IsDebFile` function:
+
+```go
+debFile := "/path/to/debFile"
+
+// Validate if the file is a .deb package
+if !d.IsDebFile(debFile) {
+    fmt.Fprintf(os.Stderr, "Error: %s is not a valid .deb file\n", debFile)
+    os.Exit(1)
+}
+
+fmt.Printf("%s is a valid .deb file\n", debFile)
+```
+
 ### Listing Installed Packages
 
 To list the installed packages and retrieve their metadata, use the `List` function:

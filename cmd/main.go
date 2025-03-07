@@ -19,6 +19,12 @@ func main() {
 	// Create a new instance of the Dpkg struct
 	d := dpkg.NewDpkg()
 
+	// Validate if the file is a .deb package
+	if !d.IsDebFile(debFile) {
+		fmt.Fprintf(os.Stderr, "Error: %s is not a valid .deb file\n", debFile)
+		os.Exit(1)
+	}
+
 	// Read the contents of the .deb file
 	pkg, err := d.Info(debFile)
 	if err != nil {
