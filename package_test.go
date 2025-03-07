@@ -37,7 +37,7 @@ func TestCalculateHashes(t *testing.T) {
 		t.Run(filepath.Base(test.debFile), func(t *testing.T) {
 			pkg := &DebPackage{Filename: test.debFile}
 
-			err := pkg.calculateHashes()
+			err := pkg.CalculateAllHashes()
 			if err != nil {
 				t.Fatalf("Failed to calculate hashes for %s: %v", test.debFile, err)
 			}
