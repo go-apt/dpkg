@@ -155,7 +155,7 @@ func (dp DebPackage) GetAptTag(field interface{}) string {
 	t := reflect.TypeOf(dp)
 
 	// Iterate over the fields of the struct to find the corresponding field
-	for i := 0; i < t.NumField(); i++ {
+	for i := range t.NumField() {
 		fieldStruct := t.Field(i)
 
 		// Get the value of the struct field
