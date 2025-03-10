@@ -28,7 +28,7 @@ if err != nil {
 }
 
 // Print package name from the .deb file
-fmt.Printf("Package from .deb file: %s\n", pkg.Package)
+fmt.Printf("Package from .deb file: %s\n", pkg.Fields["Package"])
 ```
 
 ### Validating a `.deb` File
@@ -64,7 +64,7 @@ if err != nil {
 
 // Print package names from installed packages
 for _, p := range packages {
-    fmt.Printf("Package from dpkg status file: %s\n", p.Package)
+    fmt.Printf("Package from dpkg status file: %s\n", p.Fields["Package"])
 }
 ```
 
@@ -85,6 +85,6 @@ if err != nil {
 
 // Print package names from filtered packages
 for _, p := range filteredPackages {
-    fmt.Printf("Packages from Grep search: %s\n", p.Package)
+    fmt.Printf("Packages from Grep search: %s\n", p.Fields["Package"])
 }
 ```
