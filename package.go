@@ -67,10 +67,6 @@ func (dp *DebPackage) ShortDescription() string {
 
 // CalculateAllHashes calculates the MD5, SHA1, and SHA256 hashes of the package content
 func (dp *DebPackage) CalculateAllHashes() error {
-	if dp.MD5Hash != "" && dp.SHA1Hash != "" && dp.SHA256Hash != "" {
-		return nil
-	}
-
 	r, err := dp.readDebFile()
 	if err != nil {
 		return err
@@ -115,30 +111,24 @@ func (dp *DebPackage) calculateSingleHash(hashFunc func() hash.Hash, hashField *
 
 // MD5sum returns the MD5 hash of the package content
 func (dp *DebPackage) MD5sum() string {
-	if dp.MD5Hash == "" {
-		if err := dp.calculateSingleHash(md5.New, &dp.MD5Hash); err != nil {
-			return ""
-		}
+	if err := dp.calculateSingleHash(md5.New, &dp.MD5Hash); err != nil {
+		return ""
 	}
 	return dp.MD5Hash
 }
 
 // SHA1sum returns the SHA1 hash of the package content
 func (dp *DebPackage) SHA1sum() string {
-	if dp.SHA1Hash == "" {
-		if err := dp.calculateSingleHash(sha1.New, &dp.SHA1Hash); err != nil {
-			return ""
-		}
+	if err := dp.calculateSingleHash(sha1.New, &dp.SHA1Hash); err != nil {
+		return ""
 	}
 	return dp.SHA1Hash
 }
 
 // SHA256sum returns the SHA256 hash of the package content
 func (dp *DebPackage) SHA256sum() string {
-	if dp.SHA256Hash == "" {
-		if err := dp.calculateSingleHash(sha256.New, &dp.SHA256Hash); err != nil {
-			return ""
-		}
+	if err := dp.calculateSingleHash(sha256.New, &dp.SHA256Hash); err != nil {
+		return ""
 	}
 
 	return dp.SHA256Hash
