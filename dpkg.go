@@ -40,7 +40,7 @@ func (d *Dpkg) ListGrep(pkgName string) ([]DebPackage, error) {
 
 	var filteredPackages []DebPackage
 	for _, pkg := range packages {
-		if strings.Contains(pkg.Package, pkgName) {
+		if strings.Contains(pkg.Fields["Package"], pkgName) {
 			filteredPackages = append(filteredPackages, pkg)
 		}
 	}
@@ -67,10 +67,4 @@ func (d *Dpkg) IsDebFile(debFile string) bool {
 
 	// Check the "magic value" for the ar format
 	return strings.HasPrefix(string(magic), magicValue)
-}
-
-// ScanPackages scans the directory for packages matching the criteria
-func (d *Dpkg) ScanPackages(dir string) ([]byte, error) {
-	sp := NewPackagesScanner(dir)
-	return sp.ScanPackages()
 }

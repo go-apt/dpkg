@@ -35,23 +35,27 @@ func TestCalculateHashes(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(filepath.Base(test.debFile), func(t *testing.T) {
-			pkg := &DebPackage{Filename: test.debFile}
+			pkg := &DebPackage{
+				Fields: map[string]string{
+					"Filename": test.debFile,
+				},
+			}
 
 			err := pkg.CalculateAllHashes()
 			if err != nil {
 				t.Fatalf("Failed to calculate hashes for %s: %v", test.debFile, err)
 			}
 
-			if pkg.MD5Hash != test.expectedMD5 {
-				t.Errorf("Expected MD5 hash %s, got %s", test.expectedMD5, pkg.MD5Hash)
+			if pkg.Fields["MD5"] != test.expectedMD5 {
+				t.Errorf("Expected MD5 hash %s, got %s", test.expectedMD5, pkg.Fields["MD5"])
 			}
 
-			if pkg.SHA1Hash != test.expectedSHA1 {
-				t.Errorf("Expected SHA1 hash %s, got %s", test.expectedSHA1, pkg.SHA1Hash)
+			if pkg.Fields["SHA1"] != test.expectedSHA1 {
+				t.Errorf("Expected SHA1 hash %s, got %s", test.expectedSHA1, pkg.Fields["SHA1"])
 			}
 
-			if pkg.SHA256Hash != test.expectedSHA256 {
-				t.Errorf("Expected SHA256 hash %s, got %s", test.expectedSHA256, pkg.SHA256Hash)
+			if pkg.Fields["SHA256"] != test.expectedSHA256 {
+				t.Errorf("Expected SHA256 hash %s, got %s", test.expectedSHA256, pkg.Fields["SHA256"])
 			}
 		})
 	}
@@ -79,7 +83,11 @@ func TestMD5sum(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(filepath.Base(test.debFile), func(t *testing.T) {
-			pkg := &DebPackage{Filename: test.debFile}
+			pkg := &DebPackage{
+				Fields: map[string]string{
+					"Filename": test.debFile,
+				},
+			}
 
 			md5sum := pkg.MD5sum()
 			if md5sum != test.expectedMD5 {
@@ -111,7 +119,11 @@ func TestSHA1sum(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(filepath.Base(test.debFile), func(t *testing.T) {
-			pkg := &DebPackage{Filename: test.debFile}
+			pkg := &DebPackage{
+				Fields: map[string]string{
+					"Filename": test.debFile,
+				},
+			}
 
 			sha1sum := pkg.SHA1sum()
 			if sha1sum != test.expectedSHA1 {
@@ -143,7 +155,11 @@ func TestSHA256sum(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(filepath.Base(test.debFile), func(t *testing.T) {
-			pkg := &DebPackage{Filename: test.debFile}
+			pkg := &DebPackage{
+				Fields: map[string]string{
+					"Filename": test.debFile,
+				},
+			}
 
 			sha256sum := pkg.SHA256sum()
 			if sha256sum != test.expectedSHA256 {
@@ -166,23 +182,27 @@ func BenchmarkCalcHashesIndividually(b *testing.B) {
 		expectedSHA256: "c00fbabe4192ff18b5c80eff33488cc6015b3600b9fd4fb270a66b05164fa815",
 	}
 
-	pkg := &DebPackage{Filename: test.debFile}
+	pkg := &DebPackage{
+		Fields: map[string]string{
+			"Filename": test.debFile,
+		},
+	}
 
 	for i := 0; i < b.N; i++ {
 		pkg.MD5sum()
 		pkg.SHA1sum()
 		pkg.SHA256sum()
 
-		if pkg.MD5Hash != test.expectedMD5 {
-			b.Errorf("Expected MD5 hash %s, got %s", test.expectedMD5, pkg.MD5Hash)
+		if pkg.Fields["MD5"] != test.expectedMD5 {
+			b.Errorf("Expected MD5 hash %s, got %s", test.expectedMD5, pkg.Fields["MD5"])
 		}
 
-		if pkg.SHA1Hash != test.expectedSHA1 {
-			b.Errorf("Expected SHA1 hash %s, got %s", test.expectedSHA1, pkg.SHA1Hash)
+		if pkg.Fields["SHA1"] != test.expectedSHA1 {
+			b.Errorf("Expected SHA1 hash %s, got %s", test.expectedSHA1, pkg.Fields["SHA1"])
 		}
 
-		if pkg.SHA256Hash != test.expectedSHA256 {
-			b.Errorf("Expected SHA256 hash %s, got %s", test.expectedSHA256, pkg.SHA256Hash)
+		if pkg.Fields["SHA256"] != test.expectedSHA256 {
+			b.Errorf("Expected SHA256 hash %s, got %s", test.expectedSHA256, pkg.Fields["SHA256"])
 		}
 	}
 }
@@ -200,20 +220,24 @@ func BenchmarkCalcAllHashes(b *testing.B) {
 		expectedSHA256: "c00fbabe4192ff18b5c80eff33488cc6015b3600b9fd4fb270a66b05164fa815",
 	}
 
-	pkg := &DebPackage{Filename: test.debFile}
+	pkg := &DebPackage{
+		Fields: map[string]string{
+			"Filename": test.debFile,
+		},
+	}
 
 	for i := 0; i < b.N; i++ {
 		pkg.CalculateAllHashes()
-		if pkg.MD5Hash != test.expectedMD5 {
-			b.Errorf("Expected MD5 hash %s, got %s", test.expectedMD5, pkg.MD5Hash)
+		if pkg.Fields["MD5"] != test.expectedMD5 {
+			b.Errorf("Expected MD5 hash %s, got %s", test.expectedMD5, pkg.Fields["MD5"])
 		}
 
-		if pkg.SHA1Hash != test.expectedSHA1 {
-			b.Errorf("Expected SHA1 hash %s, got %s", test.expectedSHA1, pkg.SHA1Hash)
+		if pkg.Fields["SHA1"] != test.expectedSHA1 {
+			b.Errorf("Expected SHA1 hash %s, got %s", test.expectedSHA1, pkg.Fields["SHA1"])
 		}
 
-		if pkg.SHA256Hash != test.expectedSHA256 {
-			b.Errorf("Expected SHA256 hash %s, got %s", test.expectedSHA256, pkg.SHA256Hash)
+		if pkg.Fields["SHA256"] != test.expectedSHA256 {
+			b.Errorf("Expected SHA256 hash %s, got %s", test.expectedSHA256, pkg.Fields["SHA256"])
 		}
 	}
 }

@@ -12,6 +12,7 @@ import (
 // parseControlFile parses the control file content into a DebPackage struct
 func parseControlFile(reader io.Reader) (*DebPackage, error) {
 	pkg := &DebPackage{}
+	pkg.Fields = make(map[string]string)
 
 	// Read the content of the control file
 	content, err := io.ReadAll(reader)
@@ -23,58 +24,33 @@ func parseControlFile(reader io.Reader) (*DebPackage, error) {
 	lines := strings.Split(string(content), "\n")
 
 	// Iterate over the lines to fill the struct
-	var descriptionLines []string
 	for i := 0; i < len(lines); i++ {
 		line := lines[i]
-		switch {
-		case strings.HasPrefix(line, "Package:"):
-			pkg.Package = strings.TrimSpace(strings.TrimPrefix(line, "Package:"))
-		case strings.HasPrefix(line, "Version:"):
-			pkg.Version = strings.TrimSpace(strings.TrimPrefix(line, "Version:"))
-		case strings.HasPrefix(line, "Architecture:"):
-			pkg.Architecture = strings.TrimSpace(strings.TrimPrefix(line, "Architecture:"))
-		case strings.HasPrefix(line, "Maintainer:"):
-			pkg.Maintainer = strings.TrimSpace(strings.TrimPrefix(line, "Maintainer:"))
-		case strings.HasPrefix(line, "Section:"):
-			pkg.Section = strings.TrimSpace(strings.TrimPrefix(line, "Section:"))
-		case strings.HasPrefix(line, "Priority:"):
-			pkg.Priority = strings.TrimSpace(strings.TrimPrefix(line, "Priority:"))
-		case strings.HasPrefix(line, "Essential:"):
-			pkg.Essential = strings.TrimSpace(strings.TrimPrefix(line, "Essential:"))
-		case strings.HasPrefix(line, "Installed-Size:"):
-			pkg.InstalledSize = strings.TrimSpace(strings.TrimPrefix(line, "Installed-Size:"))
-		case strings.HasPrefix(line, "Depends:"):
-			pkg.Depends = strings.Split(strings.TrimSpace(strings.TrimPrefix(line, "Depends:")), ",")
-		case strings.HasPrefix(line, "Pre-Depends:"):
-			pkg.PreDepends = strings.Split(strings.TrimSpace(strings.TrimPrefix(line, "Pre-Depends:")), ",")
-		case strings.HasPrefix(line, "Recommends:"):
-			pkg.Recommends = strings.Split(strings.TrimSpace(strings.TrimPrefix(line, "Recommends:")), ",")
-		case strings.HasPrefix(line, "Suggests:"):
-			pkg.Suggests = strings.Split(strings.TrimSpace(strings.TrimPrefix(line, "Suggests:")), ",")
-		case strings.HasPrefix(line, "Breaks:"):
-			pkg.Breaks = strings.Split(strings.TrimSpace(strings.TrimPrefix(line, "Breaks:")), ",")
-		case strings.HasPrefix(line, "Conflicts:"):
-			pkg.Conflicts = strings.Split(strings.TrimSpace(strings.TrimPrefix(line, "Conflicts:")), ",")
-		case strings.HasPrefix(line, "Provides:"):
-			pkg.Provides = strings.Split(strings.TrimSpace(strings.TrimPrefix(line, "Provides:")), ",")
-		case strings.HasPrefix(line, "Replaces:"):
-			pkg.Replaces = strings.Split(strings.TrimSpace(strings.TrimPrefix(line, "Replaces:")), ",")
-		case strings.HasPrefix(line, "Enhances:"):
-			pkg.Enhances = strings.Split(strings.TrimSpace(strings.TrimPrefix(line, "Enhances:")), ",")
-		case strings.HasPrefix(line, "Filename:"):
-			pkg.Filename = strings.TrimSpace(strings.TrimPrefix(line, "Filename:"))
-		case strings.HasPrefix(line, "Homepage:"):
-			pkg.Homepage = strings.TrimSpace(strings.TrimPrefix(line, "Homepage:"))
-		case strings.HasPrefix(line, "Description:"):
-			firstLine := strings.TrimSpace(strings.TrimPrefix(line, "Description:"))
-			descriptionLines = append(descriptionLines, firstLine)
-			// Continue reading the following lines as part of the description
-			for i+1 < len(lines) && (strings.HasPrefix(lines[i+1], " ") || strings.HasPrefix(lines[i+1], "\t")) {
-				i++
-				descriptionLines = append(descriptionLines, lines[i])
-			}
-			pkg.Description = strings.Join(descriptionLines, "\n")
+
+		// Skip empty lines
+		if line == "" {
+			continue
 		}
+
+		// Split the line into key and value
+		parts := strings.SplitN(line, ":", 2)
+		if len(parts) < 2 {
+			// If there's no ":", treat the entire line as a key with an empty value
+			pkg.Fields[strings.TrimSpace(parts[0])] = ""
+			continue
+		}
+
+		key := strings.TrimSpace(parts[0])
+		value := strings.TrimSpace(parts[1])
+
+		// Check if the next lines are continuations (start with space or tab)
+		for i+1 < len(lines) && (strings.HasPrefix(lines[i+1], " ") || strings.HasPrefix(lines[i+1], "\t")) {
+			i++
+			value += "\n" + lines[i]
+		}
+
+		// Store the key-value pair in the map
+		pkg.Fields[key] = value
 	}
 
 	return pkg, nil

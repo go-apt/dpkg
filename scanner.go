@@ -5,9 +5,20 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"reflect"
 	"regexp"
 	"strings"
+)
+
+type HASH = string
+
+const (
+	MD5    HASH = "MD5"
+	SHA1   HASH = "SHA1"
+	SHA256 HASH = "SHA256"
+)
+
+var (
+	AVAILABLE_HASHES []HASH = []HASH{MD5, SHA1, SHA256}
 )
 
 // PackagesScanner represents a scanner for Debian packages
@@ -15,7 +26,7 @@ type PackagesScanner struct {
 	RootDir      string
 	Arch         string
 	Type         string
-	Hashes       []string
+	Hashes       []HASH
 	Multiversion bool
 }
 
@@ -25,13 +36,38 @@ func NewPackagesScanner(dir string) *PackagesScanner {
 		RootDir:      dir,
 		Arch:         "",
 		Type:         "deb",
-		Hashes:       []string{"md5", "sha1", "sha256"},
+		Hashes:       []HASH{MD5, SHA1, SHA256},
 		Multiversion: false,
 	}
 }
 
+func isValidHash(h HASH) bool {
+	for _, a := range AVAILABLE_HASHES {
+		if strings.EqualFold(a, h) {
+			return true
+		}
+	}
+	return false
+}
+
+func containsHash(hashes []HASH, h HASH) bool {
+	for _, a := range hashes {
+		if strings.EqualFold(a, h) {
+			return true
+		}
+	}
+	return false
+}
+
 // ScanPackages scans the directory for packages matching the criteria
 func (ps *PackagesScanner) ScanPackages() ([]byte, error) {
+	// Check if the hashes are valid
+	for _, h := range ps.Hashes {
+		if !isValidHash(h) {
+			return nil, fmt.Errorf("invalid hash: %s", h)
+		}
+	}
+
 	// List the files in the directory that match the filter
 	files, err := findFiles(ps.RootDir, ps.createFilter())
 	if err != nil {
@@ -46,32 +82,32 @@ func (ps *PackagesScanner) ScanPackages() ([]byte, error) {
 		if err != nil {
 			// Let the user know that there was an error parsing the package
 			// but continue to the next package
-			fmt.Printf("go-apt/dpkg: error parsing package: '%s' - %v\n", file, err)
+			fmt.Fprintf(os.Stderr, "go-apt/dpkg: error parsing package: '%s' - %v\n", file, err)
 			continue
 		}
 
 		if checkMultivalue(p, &pkgs) {
-			op := pkgs[p.Package]
+			op := pkgs[p.Fields["Package"]]
 
 			if ps.Multiversion {
-				fmt.Printf("multiversion enabled; adding repeated Package '%s'\n", p.Package)
-				pkgs[p.Package+p.Version] = *p
+				fmt.Fprintf(os.Stderr, "multiversion enabled; adding repeated Package '%s'\n", p.Fields["Package"])
+				pkgs[p.Fields["Package"]+p.Fields["Version"]] = *p
 				continue
 			}
 
-			if d.CompareVersions(p.Version, op.Version) > 0 {
-				fmt.Printf("package '%s' (filename '%s') is repeat but newer version; ignored version '%s'!\n", p.Package, p.Filename, op.Version)
-				pkgs[p.Package] = *p
+			if d.CompareVersions(p.Fields["Version"], op.Fields["Version"]) > 0 {
+				fmt.Fprintf(os.Stderr, "package '%s' (filename '%s') is repeat but newer version; ignored version '%s'!\n", p.Fields["Package"], p.Fields["Filename"], op.Fields["Version"])
+				pkgs[p.Fields["Package"]] = *p
 			} else {
-				fmt.Printf("package '%s' (filename '%s') is repeat but older; ignored version '%s'!\n", p.Package, p.Filename, p.Version)
+				fmt.Fprintf(os.Stderr, "package '%s' (filename '%s') is repeat but older; ignored version '%s'!\n", p.Fields["Package"], p.Fields["Filename"], p.Fields["Version"])
 				continue
 			}
 		}
 
-		pkgs[p.Package] = *p
+		pkgs[p.Fields["Package"]] = *p
 	}
 
-	return generatePackageIndex(&pkgs), nil
+	return generatePackageIndex(&pkgs, &ps.Hashes), nil
 }
 
 // createFilter creates a regular expression filter based on architecture and type
@@ -118,55 +154,68 @@ func findFiles(directory string, filter *regexp.Regexp) ([]string, error) {
 
 // checkMultivalue checks if the package already exists in the map
 func checkMultivalue(p *DebPackage, pkgs *map[string]DebPackage) bool {
-	_, exists := (*pkgs)[p.Package]
+	_, exists := (*pkgs)[p.Fields["Package"]]
 	return exists
 }
 
 // generatePackageIndex generates the package index from the map of packages
-func generatePackageIndex(pkgs *map[string]DebPackage) []byte {
+func generatePackageIndex(pkgs *map[string]DebPackage, hashes *[]HASH) []byte {
 	var buffer bytes.Buffer
+	priorityFields := []string{
+		"Package",
+		"Source",
+		"Version",
+		"Installed-Size",
+		"Maintainer",
+		"Architecture",
+		"Depends",
+		"Recommends",
+		"Suggests",
+		"Homepage",
+		"Section",
+		"Priority",
+		"Provides",
+		"Description",
+		"Size",
+		"Filename",
+		"MD5",
+		"SHA256",
+		"SHA1",
+	}
+
 	for _, p := range *pkgs {
-		p.CalculateAllHashes()
+		printedFields := make(map[string]bool)
+
+		if containsHash(*hashes, "MD5") && containsHash(*hashes, "SHA1") && containsHash(*hashes, "SHA256") {
+			p.CalculateAllHashes()
+		}
+		if containsHash(*hashes, "MD5") {
+			p.MD5sum()
+		}
+		if containsHash(*hashes, "SHA1") {
+			p.SHA1sum()
+		}
+		if containsHash(*hashes, "SHA256") {
+			p.SHA256sum()
+		}
 		p.CalcSize()
 
-		t := reflect.TypeOf(p)
-
-		for i := 0; i < t.NumField(); i++ {
-			fieldValueStruct := reflect.ValueOf(p).Field(i)
-			if hasValue(fieldValueStruct.Interface()) {
-				var value interface{}
-				if fieldValueStruct.Kind() == reflect.Slice && fieldValueStruct.Type().Elem().Kind() == reflect.String {
-					value = strings.Join(fieldValueStruct.Interface().([]string), ",")
-				} else {
-					value = fieldValueStruct.Interface()
-				}
-				buffer.WriteString(p.GetAptTag(fieldValueStruct.Interface()))
-				buffer.WriteString(": ")
-				buffer.WriteString(fmt.Sprintf("%v", value))
-				buffer.WriteString("\n")
+		// Print priority fields first
+		for _, field := range priorityFields {
+			if value, exists := p.Fields[field]; exists {
+				buffer.WriteString(fmt.Sprintf("%s: %s\n", field, value))
+				printedFields[field] = true
 			}
 		}
+
+		// Print remaining fields
+		for key, value := range p.Fields {
+			if !printedFields[key] {
+				buffer.WriteString(fmt.Sprintf("%s: %s\n", key, value))
+			}
+		}
+
+		buffer.WriteString("\n")
 	}
 	return buffer.Bytes()
-}
-
-// hasValue checks if the attribute has a value
-func hasValue(attr interface{}) bool {
-	// Get the reflected value of the attribute
-	value := reflect.ValueOf(attr)
-
-	// Check if the value is zero (has no value)
-	switch value.Kind() {
-	case reflect.Invalid:
-		return false // nil or invalid value
-	case reflect.Ptr, reflect.Slice, reflect.Map, reflect.Chan, reflect.Func, reflect.Interface:
-		return !value.IsNil() // Check if it is nil
-	case reflect.String:
-		return value.String() != "" // Check if the string is empty
-	case reflect.Array, reflect.Struct:
-		return true // Arrays and structs always have value
-	default:
-		// For basic types (int, float, bool, etc.), check if it is the zero value
-		return value.Interface() != reflect.Zero(value.Type()).Interface()
-	}
 }
